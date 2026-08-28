@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reply", "intent", "followUpQuestion"],
+  "properties": {
+    "reply": { "type": "string" },
+    "intent": { "type": "string", "enum": ["GREETING", "WASTE_GUIDANCE", "PROFILE", "REWARDS", "MISSION", "LEADERBOARD", "MAP", "REPORT", "OTHER"] },
+    "followUpQuestion": { "type": ["string", "null"] }
+  }
+}

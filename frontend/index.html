@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EcoSort AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            color: #17351f;
+        }
+
+        header {
+            padding: 25px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #2e8b57;
+        }
+
+        .badge {
+            background: #dff3e5;
+            padding: 10px 18px;
+            border-radius: 25px;
+            color: #237044;
+            font-weight: bold;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 55px 20px 30px;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            margin-bottom: 15px;
+        }
+
+        .hero h1 span {
+            color: #2e8b57;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #55705c;
+            max-width: 650px;
+            margin: auto;
+        }
+
+        .card {
+            width: min(700px, 90%);
+            margin: 35px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .upload-box {
+            border: 2px dashed #76a982;
+            border-radius: 20px;
+            padding: 45px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-box:hover {
+            background: #f2faf4;
+        }
+
+        .upload-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .upload-box h2 {
+            margin-bottom: 10px;
+        }
+
+        .upload-box p {
+            color: #718174;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 14px 28px;
+            background: #2e8b57;
+            color: white;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            background: #236b43;
+        }
+
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 25px auto;
+            border-radius: 15px;
+            display: none;
+        }
+
+        #result {
+            display: none;
+            margin-top: 25px;
+            padding: 25px;
+            background: #f0f9f2;
+            border-radius: 18px;
+        }
+
+        #result h2 {
+            color: #2e8b57;
+            margin-bottom: 10px;
+        }
+
+        .confidence {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px;
+        }
+
+        #status {
+            margin-top: 15px;
+            color: #66756a;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #6c7b70;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🌱 Eco<span>Sort AI</span></div>
+    <div class="badge">AI Waste Detection</div>
+</header>
+
+<section class="hero">
+    <h1>Sort Waste <span>Smarter.</span></h1>
+
+    <p>
+        Upload an image of waste and let EcoSort AI identify
+        what it is using our trained machine learning model.
+    </p>
+</section>
+
+<div class="card">
+
+    <label class="upload-box" for="imageInput">
+
+        <div class="upload-icon">📷</div>
+
+        <h2>Upload Waste Image</h2>
+
+        <p>Click here to select an image from your computer</p>
+
+        <span class="button">Choose Image</span>
+
+    </label>
+
+    <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+    >
+
+    <img id="preview">
+
+    <button
+        id="predictButton"
+        class="button"
+        style="display:none;"
+    >
+        🔍 Identify Waste
+    </button>
+
+    <p id="status"></p>
+
+    <div id="result">
+
+        <h2 id="prediction"></h2>
+
+        <div class="confidence">
+            Confidence: <span id="confidence"></span>%
+        </div>
+
+        <p id="recommendation"></p>
+
+    </div>
+
+</div>
+
+<footer>
+    EcoSort AI • Intelligent Waste Classification 🌍
+</footer>
+
+
+<script>
+
+const imageInput = document.getElementById("imageInput");
+const preview = document.getElementById("preview");
+const predictButton = document.getElementById("predictButton");
+const result = document.getElementById("result");
+const prediction = document.getElementById("prediction");
+const confidence = document.getElementById("confidence");
+const recommendation = document.getElementById("recommendation");
+const status = document.getElementById("status");
+
+let selectedFile = null;
+
+
+imageInput.addEventListener("change", function () {
+
+    selectedFile = this.files[0];
+
+    if (!selectedFile) {
+        return;
+    }
+
+    preview.src = URL.createObjectURL(selectedFile);
+
+    preview.style.display = "block";
+
+    predictButton.style.display = "inline-block";
+
+    result.style.display = "none";
+
+    status.textContent = "Image ready for analysis.";
+
+});
+
+
+predictButton.addEventListener("click", async function () {
+
+    if (!selectedFile) {
+        return;
+    }
+
+    status.textContent =
+        "🧠 EcoSort AI is analyzing the image...";
+
+    predictButton.disabled = true;
+
+    const formData = new FormData();
+
+    formData.append("image", selectedFile);
+
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/predict",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Prediction failed"
+            );
+        }
+
+
+        prediction.textContent =
+            "♻️ " + formatName(data.prediction);
+
+        confidence.textContent =
+            data.confidence;
+
+
+        recommendation.textContent =
+            getRecommendation(data.prediction);
+
+
+        result.style.display = "block";
+
+        status.textContent =
+            "✅ Analysis completed successfully.";
+
+    }
+
+    catch (error) {
+
+        status.textContent =
+            "❌ Error: " + error.message;
+
+    }
+
+    finally {
+
+        predictButton.disabled = false;
+
+    }
+
+});
+
+
+function formatName(name) {
+
+    return name
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+
+}
+
+
+function getRecommendation(type) {
+
+    const recommendations = {
+
+        "plastic_water_bottles":
+            "♻️ Recyclable plastic. Place it in the appropriate recycling bin.",
+
+        "plastic_soda_bottles":
+            "♻️ Recyclable plastic. Empty and place it in the recycling bin.",
+
+        "glass_beverage_bottles":
+            "🍾 Glass waste. Place it in the designated glass recycling container.",
+
+        "cardboard_boxes":
+            "📦 Cardboard can usually be recycled. Keep it clean and dry.",
+
+        "cardboard_packaging":
+            "📦 Cardboard packaging should be placed in the paper/cardboard recycling stream.",
+
+        "newspaper":
+            "📰 Newspaper is recyclable. Place it with clean paper waste.",
+
+        "magazines":
+            "📰 Magazines can generally be recycled with paper waste.",
+
+        "food_waste":
+            "🍎 Organic waste. Consider composting or placing it in the wet-waste bin.",
+
+        "coffee_grounds":
+            "☕ Organic waste. Coffee grounds can be composted.",
+
+        "tea_bags":
+            "🍵 Dispose according to your local organic-waste rules.",
+
+        "clothing":
+            "👕 Consider donating, reusing, or sending textiles to a recycling facility.",
+
+        "shoes":
+            "👟 Consider donation, reuse, or a textile/shoe recycling program.",
+
+        "steel_food_cans":
+            "🥫 Metal cans are recyclable. Empty and rinse before recycling."
+
+    };
+
+    return recommendations[type] ||
+        "🌱 Check your local waste-management guidelines for the correct disposal method.";
+
+}
+
+</script>
+
+</body>
+</html>
