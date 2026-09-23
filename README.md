@@ -24,7 +24,7 @@ Example profile payload:
 ```json
 {
   "user_id": "22BCE1042",
-  "username": "Ruksana",
+  "username": "Shifa",
   "user_type": "student",
   "college": "ABC University",
   "hostel": "Block B",
